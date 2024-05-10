@@ -7,11 +7,12 @@ using DG.Tweening;
 [Serializable]
 public class Item
 {
+    private SpriteRenderer _cachedSpriteRenderer;
+    
     public Cell Cell { get; private set; }
 
     public Transform View { get; private set; }
-
-
+    
     public virtual void SetView()
     {
         string prefabname = GetPrefabName();
@@ -22,6 +23,7 @@ public class Item
             if (prefab)
             {
                 View = GameObject.Instantiate(prefab).transform;
+                _cachedSpriteRenderer = View.GetComponent<SpriteRenderer>();
             }
         }
     }
@@ -60,10 +62,14 @@ public class Item
     {
         if (View == null) return;
 
-        SpriteRenderer sp = View.GetComponent<SpriteRenderer>();
-        if (sp)
+        if (_cachedSpriteRenderer == null) //safety check
+        { 
+            _cachedSpriteRenderer = View.GetComponent<SpriteRenderer>();
+        }
+        
+        if (_cachedSpriteRenderer)
         {
-            sp.sortingOrder = 1;
+            _cachedSpriteRenderer.sortingOrder = 1;
         }
     }
 
@@ -72,10 +78,14 @@ public class Item
     {
         if (View == null) return;
 
-        SpriteRenderer sp = View.GetComponent<SpriteRenderer>();
-        if (sp)
+        if (_cachedSpriteRenderer == null) //safety check
+        { 
+            _cachedSpriteRenderer = View.GetComponent<SpriteRenderer>();
+        }
+        
+        if (_cachedSpriteRenderer)
         {
-            sp.sortingOrder = 0;
+            _cachedSpriteRenderer.sortingOrder = 0;
         }
 
     }
