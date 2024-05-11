@@ -29,8 +29,7 @@ public class Item
                 _cachedItemPrefab = Resources.Load<SpriteRenderer>("prefabs/itemView");
             }
 
-            var item = GameObject.Instantiate(_cachedItemPrefab);
-            _cachedSpriteRenderer = item;
+            _cachedSpriteRenderer = _cachedItemPrefab.gameObject.Reuse<SpriteRenderer>();
             _cachedSpriteRenderer.sprite = itemSprite;
             View = _cachedSpriteRenderer.transform;
         }
@@ -113,14 +112,14 @@ public class Item
             View.DOScale(0.1f, 0.1f).OnComplete(
                 () =>
                 {
-                    GameObject.Destroy(View.gameObject);
+                    View.gameObject.Release();
+                    _cachedSpriteRenderer = null;
                     View = null;
                 }
-                );
+            );
         }
     }
-
-
+    
 
     internal void AnimateForHint()
     {
@@ -144,7 +143,8 @@ public class Item
 
         if (View)
         {
-            GameObject.Destroy(View.gameObject);
+            View.gameObject.Release();
+            _cachedSpriteRenderer = null;
             View = null;
         }
     }
