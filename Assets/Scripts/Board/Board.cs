@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Board
 {
@@ -28,6 +29,11 @@ public class Board
 
     private int m_matchMin;
 
+    private HashSet<NormalItem.eNormalType> _surroundings = new HashSet<NormalItem.eNormalType>();
+    private List<NormalItem.eNormalType> _orderedCellItems = new List<NormalItem.eNormalType>(); //sorted items type on the board excluding neighboring types
+    private List<NormalItem.eNormalType> _equalCellItems = new List<NormalItem.eNormalType>();
+    private Dictionary<NormalItem.eNormalType, int> _countItemByTypes = new Dictionary<NormalItem.eNormalType, int>(); 
+    
     public Board(Transform transform, GameSettings gameSettings)
     {
         m_root = transform;
@@ -155,7 +161,8 @@ public class Board
                 NormalItem item = new NormalItem();
 
                 item.SetSkinData(itemSkinData);
-                item.SetType(Utils.GetRandomNormalType());
+                //item.SetType(Utils.GetRandomNormalType());
+                item.SetType(GetRandomTypeWithRule(cell));
                 item.SetView();
                 item.SetViewRoot(m_root);
 
@@ -164,7 +171,133 @@ public class Board
             }
         }
     }
+    
+    private NormalItem.eNormalType GetRandomTypeWithRule(Cell cell)
+    {
+        UpdateSurroundingTypes(cell);
+        UpdateCountByType();
+        UpdateOrderedCellItems();
 
+        if (_orderedCellItems.Count <= 0)
+        {
+            return Utils.GetRandomNormalType();
+        }
+        
+        _equalCellItems.Clear();
+        int minCount = 0;
+        if (_countItemByTypes.ContainsKey(_orderedCellItems[0]))
+        {
+            minCount = _countItemByTypes[_orderedCellItems[0]];
+        }
+            
+        //Increase random chance by getting random from equal count types
+        for (int i = 0; i < _orderedCellItems.Count; i++)
+        {
+            int countFromDict = _countItemByTypes.ContainsKey(_orderedCellItems[i])
+                ? _countItemByTypes[_orderedCellItems[i]] : 0;
+            
+            if (countFromDict == minCount)
+            {
+                _equalCellItems.Add(_orderedCellItems[i]);
+            }
+        }
+
+        if (_equalCellItems.Count >= 2)
+        {
+            return _equalCellItems[Random.Range(0, _equalCellItems.Count)];
+        }
+            
+        return _orderedCellItems[0];
+    }
+
+    void UpdateOrderedCellItems()
+    {
+        //_orderedCellItems.Clear(); //clear old instead of new to reduce GC
+        _orderedCellItems = Enum.GetValues(typeof(NormalItem.eNormalType)).Cast<NormalItem.eNormalType>().ToList(); //Reset list
+        _orderedCellItems.Sort(CompareTypeByCount);
+        for (int i = 0; i < _orderedCellItems.Count; i++)
+        {
+            if (_surroundings.Contains(_orderedCellItems[i]))
+            {
+                _orderedCellItems.RemoveAt(i);
+                i--;
+            }
+        }
+    }
+
+    private int CompareTypeByCount(NormalItem.eNormalType left, NormalItem.eNormalType right)
+    {
+        if (!_countItemByTypes.ContainsKey(left) && !_countItemByTypes.ContainsKey(right))
+        {
+            return 0; //take either left or right
+        }
+
+        if (!_countItemByTypes.ContainsKey(left))
+        {
+            return -1; //take left
+        }
+
+        if (!_countItemByTypes.ContainsKey(right))
+        {
+            return 1; //take right
+        }
+        
+        return _countItemByTypes[left].CompareTo(_countItemByTypes[right]);
+    }
+    
+    void UpdateCountByType()
+    {
+        _countItemByTypes.Clear(); //clear old instead of new to reduce GC
+        
+        foreach (var cell in m_cells)
+        {
+            if (cell.Item is NormalItem normalItem)
+            {
+                if (_countItemByTypes.ContainsKey(normalItem.ItemType))
+                {
+                    _countItemByTypes[normalItem.ItemType] += 1;
+                }
+                else
+                {
+                    _countItemByTypes.Add(normalItem.ItemType, 1);
+                }
+            }
+        }
+    }
+    
+    void UpdateSurroundingTypes(Cell currentCell)
+    {
+        _surroundings.Clear(); //clear old instead of new to reduce GC
+
+        //up
+        if (currentCell.NeighbourUp != null && currentCell.NeighbourUp.Item != null &&
+            currentCell.NeighbourUp.Item is NormalItem neighbourUp)
+        {
+            _surroundings.Add(neighbourUp.ItemType);
+        }
+        
+        //right 
+        if (currentCell.NeighbourRight != null && currentCell.NeighbourRight.Item != null &&
+            currentCell.NeighbourRight.Item is NormalItem neighbourRight)
+        {
+            _surroundings.Add(neighbourRight.ItemType);
+        }
+        
+        //bot
+        if (currentCell.NeighbourBottom != null && currentCell.NeighbourBottom.Item != null &&
+            currentCell.NeighbourBottom.Item is NormalItem neighbourBottom)
+        {
+            _surroundings.Add(neighbourBottom.ItemType);
+        }
+        
+        //left
+        if (currentCell.NeighbourLeft != null && currentCell.NeighbourLeft.Item != null &&
+            currentCell.NeighbourLeft.Item is NormalItem neighbourLeft)
+        {
+            _surroundings.Add(neighbourLeft.ItemType);
+        }
+    }
+    
     internal void ExplodeAllItems()
     {
         for (int x = 0; x < boardSizeX; x++)
