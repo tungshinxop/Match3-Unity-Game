@@ -17,3 +17,6 @@ MonoBehaviour:
   MatchesMin: 3
   LevelMoves: 16
   LevelTime: 30
+  TimeForHint: 5
+  ItemSkin: {fileID: 11400000, guid: e6b77bcc6b61b8941801e466fd515d4e, type: 2}
+  BonusSkin: {fileID: 11400000, guid: d0c95ea52a745a4469ca98ccac6ee1ff, type: 2}

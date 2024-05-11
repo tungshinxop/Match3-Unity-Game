@@ -3,11 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using ToolBox.Pools;
+
 
 [Serializable]
 public class Item
 {
     private SpriteRenderer _cachedSpriteRenderer;
+    private SpriteRenderer _cachedItemPrefab;
+    
+    protected ItemSkinData SkinData { get; private set; }
     
     public Cell Cell { get; private set; }
 
@@ -15,21 +20,29 @@ public class Item
     
     public virtual void SetView()
     {
-        string prefabname = GetPrefabName();
+        var itemSprite = GetSprite();
 
-        if (!string.IsNullOrEmpty(prefabname))
+        if (itemSprite != null)
         {
-            GameObject prefab = Resources.Load<GameObject>(prefabname);
-            if (prefab)
+            if (_cachedItemPrefab == null)
             {
-                View = GameObject.Instantiate(prefab).transform;
-                _cachedSpriteRenderer = View.GetComponent<SpriteRenderer>();
+                _cachedItemPrefab = Resources.Load<SpriteRenderer>("prefabs/itemView");
             }
+
+            var item = GameObject.Instantiate(_cachedItemPrefab);
+            _cachedSpriteRenderer = item;
+            _cachedSpriteRenderer.sprite = itemSprite;
+            View = _cachedSpriteRenderer.transform;
         }
     }
 
-    protected virtual string GetPrefabName() { return string.Empty; }
+    protected virtual Sprite GetSprite() { return null; }
 
+    public void SetSkinData(ItemSkinData skinData)
+    {
+        SkinData = skinData;
+    }
+    
     public virtual void SetCell(Cell cell)
     {
         Cell = cell;
@@ -61,11 +74,6 @@ public class Item
     public void SetSortingLayerHigher()
     {
         if (View == null) return;
-
-        if (_cachedSpriteRenderer == null) //safety check
-        { 
-            _cachedSpriteRenderer = View.GetComponent<SpriteRenderer>();
-        }
         
         if (_cachedSpriteRenderer)
         {
@@ -77,17 +85,11 @@ public class Item
     public void SetSortingLayerLower()
     {
         if (View == null) return;
-
-        if (_cachedSpriteRenderer == null) //safety check
-        { 
-            _cachedSpriteRenderer = View.GetComponent<SpriteRenderer>();
-        }
         
         if (_cachedSpriteRenderer)
         {
             _cachedSpriteRenderer.sortingOrder = 0;
         }
-
     }
 
     internal void ShowAppearAnimation()

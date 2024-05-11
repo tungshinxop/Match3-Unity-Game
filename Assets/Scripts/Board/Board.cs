@@ -19,6 +19,9 @@ public class Board
 
     private int boardSizeY;
 
+    private ItemSkinData itemSkinData;
+    private ItemSkinData bonusSkinData;
+
     private Cell[,] m_cells;
 
     private Transform m_root;
@@ -34,6 +37,9 @@ public class Board
         this.boardSizeX = gameSettings.BoardSizeX;
         this.boardSizeY = gameSettings.BoardSizeY;
 
+        itemSkinData = gameSettings.ItemSkin;
+        bonusSkinData = gameSettings.BonusSkin;
+        
         m_cells = new Cell[boardSizeX, boardSizeY];
 
         CreateBoard();
@@ -100,6 +106,7 @@ public class Board
                     }
                 }
 
+                item.SetSkinData(itemSkinData);
                 item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
                 item.SetView();
                 item.SetViewRoot(m_root);
@@ -147,6 +154,7 @@ public class Board
 
                 NormalItem item = new NormalItem();
 
+                item.SetSkinData(itemSkinData);
                 item.SetType(Utils.GetRandomNormalType());
                 item.SetView();
                 item.SetViewRoot(m_root);
@@ -282,6 +290,7 @@ public class Board
                 cellToConvert = matches[rnd];
             }
 
+            item.SetSkinData(bonusSkinData);
             item.SetView();
             item.SetViewRoot(m_root);
 

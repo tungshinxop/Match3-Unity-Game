@@ -15,4 +15,8 @@ public class GameSettings : ScriptableObject
     public float LevelTime = 30f;
 
     public float TimeForHint = 5f;
+
+    public ItemSkinData ItemSkin;
+    
+    public ItemSkinData BonusSkin;
 }
