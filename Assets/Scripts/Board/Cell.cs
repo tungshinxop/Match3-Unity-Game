@@ -46,6 +46,8 @@ public class Cell : MonoBehaviour
 
     public void ApplyItemPosition(bool withAppearAnimation)
     {
+        if (Item == null) return;
+
         Item.SetViewPosition(this.transform.position);
 
         if (withAppearAnimation)
@@ -78,16 +80,22 @@ public class Cell : MonoBehaviour
 
     internal void AnimateItemForHint()
     {
+        if (Item == null) return;
+        
         Item.AnimateForHint();
     }
 
     internal void StopHintAnimation()
     {
+        if (Item == null) return;
+        
         Item.StopAnimateForHint();
     }
 
     internal void ApplyItemMoveToPosition()
     {
+        if (Item == null) return;
+        
         Item.AnimationMoveToPosition();
     }
 }

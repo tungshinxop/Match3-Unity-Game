@@ -24,6 +24,7 @@ public class GameManager : MonoBehaviour
     }
 
     private eStateGame m_state;
+    private eLevelMode m_levelMode;
     public eStateGame State
     {
         get { return m_state; }
@@ -85,7 +86,8 @@ public class GameManager : MonoBehaviour
     {
         m_boardController = new GameObject("BoardController").AddComponent<BoardController>();
         m_boardController.StartGame(this, m_gameSettings);
-
+        m_levelMode = mode;
+        
         if (mode == eLevelMode.MOVES)
         {
             m_levelCondition = this.gameObject.AddComponent<LevelMoves>();
@@ -102,6 +104,16 @@ public class GameManager : MonoBehaviour
         State = eStateGame.GAME_STARTED;
     }
 
+    public void ReloadLevel()
+    {
+        if (m_levelCondition != null)
+        {
+            Destroy(m_levelCondition);
+        }
+        
+        LoadLevel(m_levelMode);
+    }
+    
     public void GameOver()
     {
         StartCoroutine(WaitBoardController());

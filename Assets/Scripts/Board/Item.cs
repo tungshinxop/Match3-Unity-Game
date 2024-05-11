@@ -110,16 +110,19 @@ public class Item
         if (View)
         {
             View.DOScale(0.1f, 0.1f).OnComplete(
-                () =>
-                {
-                    View.gameObject.Release();
-                    _cachedSpriteRenderer = null;
-                    View = null;
-                }
+                ResetViewObject
             );
         }
     }
-    
+
+    private void ResetViewObject()
+    {
+        View.gameObject.Release();
+        View.DOKill();
+        _cachedSpriteRenderer = null;
+        View = null;
+    }
+
 
     internal void AnimateForHint()
     {
@@ -143,9 +146,7 @@ public class Item
 
         if (View)
         {
-            View.gameObject.Release();
-            _cachedSpriteRenderer = null;
-            View = null;
+            ResetViewObject();
         }
     }
 }

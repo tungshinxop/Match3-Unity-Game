@@ -51,6 +51,12 @@ public class UIMainManager : MonoBehaviour
         m_gameManager.StateChangedAction += OnGameStateChange;
     }
 
+    internal void Restart()
+    {
+        m_gameManager.ClearLevel();
+        m_gameManager.ReloadLevel();
+    }
+
     private void OnGameStateChange(GameManager.eStateGame state)
     {
         switch (state)
